@@ -4,12 +4,13 @@ declared-services:
     label: speech_to_text
     plan: standard
 applications:
-- name: speech-to-text-demo
+- name: speech-to-text-nodejs-marcelanca-835
   path: .
   command: npm start
   memory: 512M
   services:
-  - speech-to-text-service-standard
+    - speech-to-text-service-standard
   env:
     NODE_ENV: production
     SECURE_EXPRESS: 1
+  host: speech-to-text-nodejs-marcelanca-835
