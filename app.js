@@ -44,16 +44,23 @@ io.on('connection', function(socket){
     alchemy_language.sentiment(params, function (err, response) {
       if (err){
         //console.log('error sentiment:', err);
-        sentimentPrevious =sentimentPrevious+ (Math.random()-0.5)*0.1;
-        sentimentPrevious=Math.max(sentimentPrevious,-1);
-        sentimentPrevious=Math.min(sentimentPrevious,1);
+        var change= + (Math.random()-0.5)*0.1;
+        sentimentPrevious =sentimentPrevious*0.5 + change;
+        sentimentPrevious=Math.max(sentimentPrevious,-0.1);
+        sentimentPrevious=Math.min(sentimentPrevious,0.1);
+        console.log(change)
+
+        console.log(sentimentPrevious)
 
         io.emit('sentiment', sentimentPrevious< 0 ? 'negative_mockup' : 'positive_mockup');
-        console.log(sentimentPrevious< 0 ? 'negative_mockup' : 'positive_mockup');
+        console.log(sentimentPrevious< 0 ? 'negative sentiment (mockup)' : 'positive sentiment (mockup)');
       }
       else{
-        console.log(JSON.stringify(response, null, 2));
+        //console.log(JSON.stringify(response, null, 2));
         if (response && response.docSentiment && response.docSentiment.type && response.docSentiment.score){
+
+        console.log(response.docSentiment.type);
+
         io.emit('sentiment', response.docSentiment.type);
         sentimentPrevious=response.docSentiment.score;
 
@@ -63,18 +70,18 @@ io.on('connection', function(socket){
 
     });
 
-    alchemy_language.emotion(params, function (err, response) {
-      if (err){
-        console.log('error emotion:', err);
-        io.emit('emotion', err);
-      }
-      else{
-        console.log(JSON.stringify(response, null, 2));
-        if (response && response.docSentiment && response.docSentiment.type){
-        io.emit('emotion', response.docEmotions.anger + ":"+response.docEmotions.disgust + ":"+response.docEmotions.fear + ":"+response.docEmotions.joy + ":"+response.docEmotions.sadness);}
-      }
+    // alchemy_language.emotion(params, function (err, response) {
+    //   if (err){
+    //     //console.log('error emotion:', err);
+    //     io.emit('emotion', err);
+    //   }
+    //   else{
+    //     console.log(JSON.stringify(response, null, 2));
+    //     if (response && response.docSentiment && response.docSentiment.type){
+    //     io.emit('emotion', response.docEmotions.anger + ":"+response.docEmotions.disgust + ":"+response.docEmotions.fear + ":"+response.docEmotions.joy + ":"+response.docEmotions.sadness);}
+    //   }
 
-    });
+    // });
 
 
 
