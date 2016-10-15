@@ -20,8 +20,23 @@ var express = require('express'),
   app = express(),
   vcapServices = require('vcap_services'),
   extend = require('util')._extend,
-  watson = require('watson-developer-cloud');
+  watson = require('watson-developer-cloud'),
+  server = require('http').createServer(app),
+  io = require('socket.io')(server);
 var expressBrowserify = require('express-browserify');
+
+io.on('connection', function(socket){
+  console.log('a user connected');
+  socket.on('chat message', function(msg){
+    console.log('message: ' + msg);
+  });
+
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
+});
+
+
 
 // load environment properties from a .env file for local development
 require('dotenv').load({silent: true});
@@ -38,8 +53,8 @@ app.get('/js/index.js', expressBrowserify('src/index.js', {
 var config = extend({
   version: 'v1',
   url: 'https://stream.watsonplatform.net/speech-to-text/api',
-  username: process.env.STT_USERNAME || '<username>',
-  password: process.env.STT_PASSWORD || '<password>'
+  username: process.env.STT_USERNAME || 'd584f29f-db32-4c45-9582-8d23270189b6',
+  password: process.env.STT_PASSWORD || 'wZUUNhvwp8IX'
 }, vcapServices.getCredentials('speech_to_text'));
 
 var authService = watson.authorization(config);
@@ -61,7 +76,8 @@ app.post('/api/token', function(req, res, next) {
   });
 });
 
+
 // error-handler settings
 require('./config/error-handler')(app);
 
-module.exports = app;
+module.exports = server;

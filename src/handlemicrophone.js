@@ -18,6 +18,8 @@
 
 var initSocket = require('./socket').initSocket;
 var display = require('./views/displaymetadata');
+var socket = io();
+
 
 exports.handleMicrophone = function(token, model, mic, callback) {
 
@@ -79,6 +81,11 @@ exports.handleMicrophone = function(token, model, mic, callback) {
       baseString = display.showResult(msg, baseString, model);
       baseJSON = JSON.stringify(msg, null, 2);
       display.showJSON(baseJSON);
+      console.log('TRANSCRIPTED TEXT:');
+
+      console.log(baseString);
+      socket.emit('chat message',baseString);
+
     }
   }
 
