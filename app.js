@@ -25,10 +25,62 @@ var express = require('express'),
   io = require('socket.io')(server);
 var expressBrowserify = require('express-browserify');
 
+var watson = require('watson-developer-cloud');
+
+var alchemy_language = new watson.alchemy_language({  api_key: '401003686a765f8f10fcdd0e598ce6bb08c82350'});
+
+var sentimentPrevious = 0;
+
 io.on('connection', function(socket){
   console.log('a user connected');
   socket.on('chat message', function(msg){
     console.log('message: ' + msg);
+
+
+    var params = {
+      text: msg
+    };
+
+    alchemy_language.sentiment(params, function (err, response) {
+      if (err){
+        //console.log('error sentiment:', err);
+        sentimentPrevious =sentimentPrevious+ (Math.random()-0.5)*0.1;
+        sentimentPrevious=Math.max(sentimentPrevious,-1);
+        sentimentPrevious=Math.min(sentimentPrevious,1);
+
+        io.emit('sentiment', sentimentPrevious< 0 ? 'negative_mockup' : 'positive_mockup');
+        console.log(sentimentPrevious< 0 ? 'negative_mockup' : 'positive_mockup');
+      }
+      else{
+        console.log(JSON.stringify(response, null, 2));
+        if (response && response.docSentiment && response.docSentiment.type && response.docSentiment.score){
+        io.emit('sentiment', response.docSentiment.type);
+        sentimentPrevious=response.docSentiment.score;
+
+        }
+
+      }
+
+    });
+
+    alchemy_language.emotion(params, function (err, response) {
+      if (err){
+        console.log('error emotion:', err);
+        io.emit('emotion', err);
+      }
+      else{
+        console.log(JSON.stringify(response, null, 2));
+        if (response && response.docSentiment && response.docSentiment.type){
+        io.emit('emotion', response.docEmotions.anger + ":"+response.docEmotions.disgust + ":"+response.docEmotions.fear + ":"+response.docEmotions.joy + ":"+response.docEmotions.sadness);}
+      }
+
+    });
+
+
+
+
+
+    io.emit('transcript', msg);
   });
 
   socket.on('disconnect', function(){
